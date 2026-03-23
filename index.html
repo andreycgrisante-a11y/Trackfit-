@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Track Fit - By Andrey</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#2a2a2a;--red:#ff2d2d;--blue:#2d7fff;--green:#00d084;--yellow:#ffcc00;--orange:#ff8c00;--purple:#b46fff;--text:#f0f0f0;--muted:#666}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;padding-bottom:70px}
+/* HEADER */
+.header{background:var(--surface);border-bottom:2px solid var(--border);padding:11px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;letter-spacing:1.5px;text-transform:uppercase;line-height:1.1}
+.header-title span{color:var(--red)}
+.header-title small{display:block;font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:400;text-transform:uppercase}
+/* MAIN NAV */
+.main-nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-bottom:2px solid var(--border);position:sticky;top:55px;z-index:99}
+.main-nav-btn{padding:10px 2px;background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.main-nav-btn.active{color:var(--text);border-color:var(--red)}
+.main-section{display:none}.main-section.active{display:block}
+/* TREINOS TABS */
+.tab-nav{display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface2);border-bottom:1px solid var(--border);position:sticky;top:107px;z-index:98}
+.tab-btn{padding:10px 2px;background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.3px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab-btn .dot{width:4px;height:4px;border-radius:50%;background:var(--muted);transition:background 0.2s}
+.tab-btn[data-tab="A"].active{border-color:var(--red);color:var(--red)}.tab-btn[data-tab="A"].active .dot{background:var(--red)}
+.tab-btn[data-tab="B"].active{border-color:var(--blue);color:var(--blue)}.tab-btn[data-tab="B"].active .dot{background:var(--blue)}
+.tab-btn[data-tab="C"].active{border-color:var(--green);color:var(--green)}.tab-btn[data-tab="C"].active .dot{background:var(--green)}
+.tab-btn[data-tab="D"].active{border-color:var(--yellow);color:var(--yellow)}.tab-btn[data-tab="D"].active .dot{background:var(--yellow)}
+.tab-btn[data-tab="cardio"].active{border-color:var(--orange);color:var(--orange)}.tab-btn[data-tab="cardio"].active .dot{background:var(--orange)}
+.tab-btn[data-tab="abs"].active{border-color:var(--purple);color:var(--purple)}.tab-btn[data-tab="abs"].active .dot{background:var(--purple)}
+.panel{display:none;padding:12px}.panel.active{display:block}
+.panel-header{display:flex;align-items:center;margin-bottom:12px;padding:12px 14px;background:var(--surface);border-radius:11px;border-left:4px solid #fff}
+.panel-info h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;text-transform:uppercase}
+.panel-info p{font-size:11px;color:var(--muted);margin-top:2px}
+.progress-wrap{background:var(--surface);border-radius:10px;padding:10px 12px;margin-bottom:11px;border:1px solid var(--border)}
+.progress-label{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase}
+.progress-bar{height:4px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
+/* EXERCISE CARD */
+.ex-card{background:var(--surface);border-radius:11px;margin-bottom:8px;overflow:hidden;border:1px solid var(--border)}
+.ex-header{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer;user-select:none}
+.ex-number{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:1px}
+.ex-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.5px;text-transform:uppercase}
+.ex-chevron{color:var(--muted);font-size:14px;transition:transform 0.2s;flex-shrink:0}
+.ex-card.open .ex-chevron{transform:rotate(180deg)}
+.ex-body{display:none;padding:0 13px 12px;border-top:1px solid var(--border)}
+.ex-card.open .ex-body{display:block}
+.series-table{width:100%;border-collapse:collapse;margin-top:8px}
+.series-table th{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 5px;border-bottom:1px solid var(--border)}
+.series-table td{padding:7px 5px;font-size:13px;font-weight:600;border-bottom:1px solid #1c1c1c;vertical-align:middle}
+.series-table tr:last-child td{border-bottom:none}
+.serie-num{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--muted);font-weight:400;width:24px}
+.check-btn{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;color:transparent;line-height:1;flex-shrink:0}
+.check-btn.done{background:var(--green);border-color:var(--green);color:#000}
+.peso-input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;font-weight:700;width:60px;text-align:center;font-family:'Barlow',sans-serif;padding:2px 3px;cursor:pointer;transition:border-color 0.2s}
+.peso-input:focus{outline:none;border-color:var(--green);background:#00d08411;border-radius:4px 4px 0 0}
+.peso-updated{color:var(--green)!important;border-color:var(--green)!important}
+/* OBS FIELD */
+.obs-wrap{margin-top:10px}
+.obs-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.obs-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:8px 10px;resize:none;line-height:1.5;transition:border-color 0.2s}
+.obs-input:focus{outline:none;border-color:var(--orange);background:#ff8c0008}
+.obs-input::placeholder{color:var(--muted)}
+/* DROP */
+.drop-tag{display:inline-block;background:#ff2d2d22;color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-top:8px}
+.drop-set-box{margin-top:7px;background:#ff2d2d11;border:1px solid #ff2d2d33;border-radius:8px;padding:8px 10px}
+.drop-set-box p{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--red);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px}
+.drop-steps{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.drop-step{background:var(--surface);padding:4px 8px;border-radius:5px;font-size:13px;font-weight:700}
+.drop-arrow{color:var(--red);font-size:12px}
+.tips{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.tip{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#aaa;background:var(--surface2);padding:6px 8px;border-radius:7px}
+.tip-icon{flex-shrink:0;font-size:12px}
+/* BUTTONS */
+.finish-btn{display:block;width:100%;padding:13px;background:var(--green);border:none;border-radius:10px;color:#000;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:8px}
+.reset-btn{display:block;width:100%;padding:11px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:7px}
+/* CARDIO/ABS */
+.info-card{background:var(--surface);border-radius:11px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px}
+.info-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--muted);font-size:12px}
+.info-value{font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:0.5px}
+.hiit-steps{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.hiit-step{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px}
+.hiit-step.run{background:#ff8c0018;border:1px solid #ff8c0030}
+.hiit-step.walk{background:#00d08418;border:1px solid #00d08430}
+.hiit-step-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:0.5px}
+.hiit-step-detail{font-size:11px;color:var(--muted);margin-top:1px}
+.no-tag{display:inline-flex;align-items:center;gap:4px;background:#ff2d2d18;border:1px solid #ff2d2d30;color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:20px;margin:3px 3px 0 0}
+.abs-day{background:var(--surface);border-radius:11px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden}
+.abs-day-header{padding:11px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.abs-day-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.5px}
+.abs-day-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.abs-day-body{display:none;padding:0 13px 12px;border-top:1px solid var(--border)}
+.abs-day.open .abs-day-body{display:block}
+.abs-day.open .ex-chevron{transform:rotate(180deg)}
+.abs-ex-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1c1c1c}
+.abs-ex-row:last-child{border-bottom:none}
+.abs-ex-name{font-weight:600;font-size:13px}
+.abs-ex-sets{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);margin-top:1px}
+.abs-check-group{display:flex;gap:5px}
+.abs-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.15s;color:transparent;line-height:1}
+.abs-check.done{background:var(--purple);border-color:var(--purple);color:#fff}
+/* HISTÓRICO */
+.hist-section{padding:12px}
+.hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.hist-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:19px;letter-spacing:1px;text-transform:uppercase}
+.hist-actions{display:flex;gap:7px}
+.hist-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:6px 11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.hist-btn.export{border-color:#2d7fff44;color:var(--blue)}
+.no-hist{text-align:center;padding:50px 20px;color:var(--muted)}
+.no-hist-icon{font-size:36px;margin-bottom:10px}
+.no-hist p{font-size:13px;line-height:1.6}
+.hist-day-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);margin-bottom:9px;overflow:hidden}
+.hist-day-header{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.hist-day-left{display:flex;align-items:center;gap:9px}
+.hist-day-badge{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;padding:4px 9px;border-radius:6px;text-transform:uppercase}
+.hist-day-meta{font-size:11px;color:var(--muted)}
+.hist-day-date{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px}
+.hist-day-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border)}
+.hist-day-card.open .hist-day-body{display:block}
+.hist-day-card.open .ex-chevron{transform:rotate(180deg)}
+.hist-ex-block{margin-top:10px}
+.hist-ex-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;color:#ccc}
+.hist-series-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.hist-serie-chip{background:var(--surface2);border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;color:#aaa;display:flex;gap:4px;align-items:center}
+.hist-serie-chip .hsc-num{color:var(--muted);font-size:9px}
+.hist-serie-chip .hsc-peso{color:var(--text)}
+.hist-serie-chip.done-chip{background:#00d08420;color:var(--green)}
+.hist-obs-box{margin-top:6px;background:#ff8c0010;border:1px solid #ff8c0025;border-radius:7px;padding:6px 9px;font-size:11px;color:#ffaa55;display:flex;gap:6px;align-items:flex-start}
+/* FOTOS */
+.foto-section{padding:12px}
+.foto-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.foto-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:19px;letter-spacing:1px;text-transform:uppercase}
+.add-foto-btn{background:var(--red);border:none;border-radius:8px;padding:8px 14px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:5px}
+.foto-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.foto-form-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.foto-field{margin-bottom:10px}
+.foto-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.foto-field input[type=text],.foto-field input[type=number]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:9px 11px}
+.foto-field input:focus{outline:none;border-color:var(--purple)}
+.foto-file-label{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--surface2);border:2px dashed var(--border);border-radius:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);transition:all 0.2s}
+.foto-file-label:hover{border-color:var(--purple);color:var(--purple)}
+.foto-preview{width:100%;max-height:200px;object-fit:cover;border-radius:8px;display:none;margin-top:8px}
+.foto-save-btn{display:block;width:100%;padding:12px;background:var(--purple);border:none;border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:4px}
+.foto-cancel-btn{display:block;width:100%;padding:10px;background:none;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:7px}
+.no-foto{text-align:center;padding:50px 20px;color:var(--muted)}
+.no-foto-icon{font-size:40px;margin-bottom:10px}
+.foto-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.foto-card{background:var(--surface);border-radius:11px;overflow:hidden;border:1px solid var(--border)}
+.foto-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.foto-card-info{padding:8px 10px}
+.foto-card-date{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:var(--muted);letter-spacing:0.5px}
+.foto-card-peso{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;color:var(--purple)}
+.foto-card-obs{font-size:11px;color:#aaa;margin-top:3px}
+.foto-card-del{display:block;width:100%;padding:6px;background:none;border:none;border-top:1px solid var(--border);color:#ff2d2d66;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-align:center}
+/* EXPORT MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:#000000cc;z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--surface);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.export-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:#aaa;font-family:'Barlow Condensed',sans-serif;font-size:11px;padding:11px;min-height:180px;resize:none;letter-spacing:0.3px;line-height:1.6}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.modal-copy-btn{padding:12px;background:var(--blue);border:none;border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.modal-close-btn{padding:12px;background:none;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+/* TOAST */
+.toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%) translateY(20px);background:#00d084;color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;padding:9px 18px;border-radius:30px;opacity:0;transition:all 0.3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">Track Fit <span>✦</span><small>By Andrey</small></div>
+  <div style="font-size:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px" id="today-label"></div>
+</div>
+
+<div class="main-nav">
+  <button class="main-nav-btn active" onclick="switchMain('treinos')">💪 Treinos</button>
+  <button class="main-nav-btn" onclick="switchMain('historico')">📋 Histórico</button>
+  <button class="main-nav-btn" onclick="switchMain('fotos')">📸 Fotos</button>
+  <button class="main-nav-btn" onclick="switchMain('export')">📤 Exportar</button>
+</div>
+
+<!-- ===== TREINOS ===== -->
+<div id="main-treinos" class="main-section active">
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="A" onclick="switchTab('A')"><div class="dot"></div>PEITO</button>
+    <button class="tab-btn" data-tab="B" onclick="switchTab('B')"><div class="dot"></div>COSTAS</button>
+    <button class="tab-btn" data-tab="C" onclick="switchTab('C')"><div class="dot"></div>PERNAS</button>
+    <button class="tab-btn" data-tab="D" onclick="switchTab('D')"><div class="dot"></div>OMBRO</button>
+    <button class="tab-btn" data-tab="cardio" onclick="switchTab('cardio')"><div class="dot"></div>CARDIO</button>
+    <button class="tab-btn" data-tab="abs" onclick="switchTab('abs')"><div class="dot"></div>ABD</button>
+  </div>
+
+  <!-- PANEL A -->
+  <div id="panel-A" class="panel active">
+    <div class="panel-header" style="border-left-color:var(--red)"><div class="panel-info"><h2 style="color:var(--red)">A — PEITO</h2><p>Prioridade nº1 · Foco lateral + densidade</p></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Progresso</span><span id="prog-A">0 séries</span></div><div class="progress-bar"><div class="progress-fill" id="fill-A" style="width:0%;background:var(--red)"></div></div></div>
+    <div class="ex-card" id="ex-A1"><div class="ex-header" onclick="toggleEx('ex-A1')"><div><div class="ex-number">01 · Pré-exaustão</div><div class="ex-name">Cross na Polia</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="12" data-ex="A1" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>15</td><td><input class="peso-input" type="text" value="15" data-ex="A1" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>20+parciais</td><td><input class="peso-input" type="text" value="15" data-ex="A1" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr></table><div class="tips"><div class="tip"><span class="tip-icon">⏱</span>Segura 2s no pico</div></div><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Máquina ocupada, usei halter inclinado..." data-ex="A1"></textarea></div></div></div>
+    <div class="ex-card" id="ex-A2"><div class="ex-header" onclick="toggleEx('ex-A2')"><div><div class="ex-number">02 · Composto</div><div class="ex-name">Supino Reto Halter</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="30" data-ex="A2" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="32" data-ex="A2" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="34" data-ex="A2" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8+parciais</td><td><input class="peso-input" type="text" value="36" data-ex="A2" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr></table><div class="tips"><div class="tip"><span class="tip-icon">⬇️</span>Descida em 3 segundos</div></div><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Máquina ocupada, usei halter inclinado..." data-ex="A2"></textarea></div></div></div>
+    <div class="ex-card" id="ex-A3"><div class="ex-header" onclick="toggleEx('ex-A3')"><div><div class="ex-number">03 · Superior</div><div class="ex-name">Supino Inclinado Halter</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="28" data-ex="A3" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="30" data-ex="A3" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="32" data-ex="A3" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8</td><td><input class="peso-input" type="text" value="34" data-ex="A3" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Máquina ocupada, usei halter inclinado..." data-ex="A3"></textarea></div></div></div>
+    <div class="ex-card" id="ex-A4"><div class="ex-header" onclick="toggleEx('ex-A4')"><div><div class="ex-number">04 · Máquina</div><div class="ex-name">Chest Press</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="60" data-ex="A4" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="70" data-ex="A4" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="80" data-ex="A4" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8</td><td><input class="peso-input" type="text" value="90" data-ex="A4" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr></table><div class="drop-tag">🔥 DROP SET</div><div class="drop-set-box"><p>Sem descanso</p><div class="drop-steps"><div class="drop-step">90</div><div class="drop-arrow">→</div><div class="drop-step">70</div><div class="drop-arrow">→</div><div class="drop-step">50 kg</div></div></div><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Máquina ocupada, usei halter inclinado..." data-ex="A4"></textarea></div></div></div>
+    <div class="ex-card" id="ex-A5"><div class="ex-header" onclick="toggleEx('ex-A5')"><div><div class="ex-number">05 · Finalização</div><div class="ex-name">Cross Finalizador</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12–15</td><td><input class="peso-input" type="text" value="—" data-ex="A5" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>12–15</td><td><input class="peso-input" type="text" value="—" data-ex="A5" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>Falha+parciais</td><td><input class="peso-input" type="text" value="—" data-ex="A5" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Máquina ocupada, usei halter inclinado..." data-ex="A5"></textarea></div></div></div>
+    <div class="ex-card" id="ex-A6"><div class="ex-header" onclick="toggleEx('ex-A6')"><div><div class="ex-number">06 · Final</div><div class="ex-name">Flexão</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>Até falha</td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>Até falha</td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>Até falha</td><td><button class="check-btn" onclick="checkSerie(this,'A')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Substituído por paralelas..." data-ex="A6"></textarea></div></div></div>
+    <button class="finish-btn" onclick="finalizarTreino('A')">✅ FINALIZAR TREINO A</button>
+    <button class="reset-btn" onclick="resetPanel('A')">↺ Resetar Treino A</button>
+  </div>
+
+  <!-- PANEL B -->
+  <div id="panel-B" class="panel">
+    <div class="panel-header" style="border-left-color:var(--blue)"><div class="panel-info"><h2 style="color:var(--blue)">B — COSTAS</h2><p>Foco dorsal · Puxada com cotovelo</p></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Progresso</span><span id="prog-B">0 séries</span></div><div class="progress-bar"><div class="progress-fill" id="fill-B" style="width:0%;background:var(--blue)"></div></div></div>
+    <div class="ex-card" id="ex-B1"><div class="ex-header" onclick="toggleEx('ex-B1')"><div><div class="ex-number">01 · Vertical</div><div class="ex-name">Pulldown Pronada</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="50" data-ex="B1" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="55" data-ex="B1" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="60" data-ex="B1" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8</td><td><input class="peso-input" type="text" value="65" data-ex="B1" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Máquina ocupada, usei barra fixa..." data-ex="B1"></textarea></div></div></div>
+    <div class="ex-card" id="ex-B2"><div class="ex-header" onclick="toggleEx('ex-B2')"><div><div class="ex-number">02 · Isolamento</div><div class="ex-name">Pullover Polia Barra</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="25" data-ex="B2" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="27.5" data-ex="B2" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>10</td><td><input class="peso-input" type="text" value="30" data-ex="B2" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>8</td><td><input class="peso-input" type="text" value="32.5" data-ex="B2" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Feito com halter deitado..." data-ex="B2"></textarea></div></div></div>
+    <div class="ex-card" id="ex-B3"><div class="ex-header" onclick="toggleEx('ex-B3')"><div><div class="ex-number">03 · Remada</div><div class="ex-name">Remada Smith Supinada</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="20" data-ex="B3" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="25" data-ex="B3" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="30" data-ex="B3" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8</td><td><input class="peso-input" type="text" value="35" data-ex="B3" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Smith indisponível, usei remada curvada..." data-ex="B3"></textarea></div></div></div>
+    <div class="ex-card" id="ex-B4"><div class="ex-header" onclick="toggleEx('ex-B4')"><div><div class="ex-number">04 · Remada</div><div class="ex-name">Remada Baixa</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="45" data-ex="B4" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="50" data-ex="B4" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="55" data-ex="B4" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>8</td><td><input class="peso-input" type="text" value="60" data-ex="B4" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Polia baixa com corda..." data-ex="B4"></textarea></div></div></div>
+    <div class="ex-card" id="ex-B5"><div class="ex-header" onclick="toggleEx('ex-B5')"><div><div class="ex-number">05 · Posterior</div><div class="ex-name">Facepull</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="17" data-ex="B5" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>15</td><td><input class="peso-input" type="text" value="17" data-ex="B5" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>12</td><td><input class="peso-input" type="text" value="20" data-ex="B5" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="B5"></textarea></div></div></div>
+    <div class="ex-card" id="ex-B6"><div class="ex-header" onclick="toggleEx('ex-B6')"><div><div class="ex-number">06 · Extra</div><div class="ex-name">Elevação Lateral Leve</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="10" data-ex="B6" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>15</td><td><input class="peso-input" type="text" value="10" data-ex="B6" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>15</td><td><input class="peso-input" type="text" value="12" data-ex="B6" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'B')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="B6"></textarea></div></div></div>
+    <button class="finish-btn" style="background:var(--blue)" onclick="finalizarTreino('B')">✅ FINALIZAR TREINO B</button>
+    <button class="reset-btn" onclick="resetPanel('B')">↺ Resetar Treino B</button>
+  </div>
+
+  <!-- PANEL C -->
+  <div id="panel-C" class="panel">
+    <div class="panel-header" style="border-left-color:var(--green)"><div class="panel-info"><h2 style="color:var(--green)">C — PERNAS</h2><p>Força + Volume · Profundidade obrigatória</p></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Progresso</span><span id="prog-C">0 séries</span></div><div class="progress-bar"><div class="progress-fill" id="fill-C" style="width:0%;background:var(--green)"></div></div></div>
+    <div class="ex-card" id="ex-C1"><div class="ex-header" onclick="toggleEx('ex-C1')"><div><div class="ex-number">01 · Isolamento</div><div class="ex-name">Extensora</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="55" data-ex="C1" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>12</td><td><input class="peso-input" type="text" value="60" data-ex="C1" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>10</td><td><input class="peso-input" type="text" value="65" data-ex="C1" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>8 hold 1s</td><td><input class="peso-input" type="text" value="70" data-ex="C1" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Extensora 1 ocupada, usei a 2..." data-ex="C1"></textarea></div></div></div>
+    <div class="ex-card" id="ex-C2"><div class="ex-header" onclick="toggleEx('ex-C2')"><div><div class="ex-number">02 · Principal</div><div class="ex-name">Leg Press</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="160" data-ex="C2" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="200" data-ex="C2" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="240" data-ex="C2" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>8–10</td><td><input class="peso-input" type="text" value="260" data-ex="C2" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="C2"></textarea></div></div></div>
+    <div class="ex-card" id="ex-C3"><div class="ex-header" onclick="toggleEx('ex-C3')"><div><div class="ex-number">03 · Composto</div><div class="ex-name">Agachamento Smith</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="20" data-ex="C3" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="30" data-ex="C3" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="35" data-ex="C3" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8</td><td><input class="peso-input" type="text" value="40" data-ex="C3" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Ex: Smith ocupado, agachamento livre..." data-ex="C3"></textarea></div></div></div>
+    <div class="ex-card" id="ex-C4"><div class="ex-header" onclick="toggleEx('ex-C4')"><div><div class="ex-number">04 · Posterior</div><div class="ex-name">Flexora</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="20" data-ex="C4" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="22.5" data-ex="C4" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="25" data-ex="C4" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>8</td><td><input class="peso-input" type="text" value="30" data-ex="C4" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="C4"></textarea></div></div></div>
+    <div class="ex-card" id="ex-C5"><div class="ex-header" onclick="toggleEx('ex-C5')"><div><div class="ex-number">05 · Isquios</div><div class="ex-name">Stiff Halter</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="12" data-ex="C5" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="12" data-ex="C5" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>10</td><td><input class="peso-input" type="text" value="14" data-ex="C5" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>8</td><td><input class="peso-input" type="text" value="16" data-ex="C5" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="C5"></textarea></div></div></div>
+    <div class="ex-card" id="ex-C6"><div class="ex-header" onclick="toggleEx('ex-C6')"><div><div class="ex-number">06 · Panturrilha</div><div class="ex-name">Panturrilha</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15–20</td><td><input class="peso-input" type="text" value="60" data-ex="C6" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>15–20</td><td><input class="peso-input" type="text" value="60" data-ex="C6" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>15–20</td><td><input class="peso-input" type="text" value="60" data-ex="C6" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>15–20</td><td><input class="peso-input" type="text" value="60" data-ex="C6" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'C')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="C6"></textarea></div></div></div>
+    <button class="finish-btn" style="background:var(--green)" onclick="finalizarTreino('C')">✅ FINALIZAR TREINO C</button>
+    <button class="reset-btn" onclick="resetPanel('C')">↺ Resetar Treino C</button>
+  </div>
+
+  <!-- PANEL D -->
+  <div id="panel-D" class="panel">
+    <div class="panel-header" style="border-left-color:var(--yellow)"><div class="panel-info"><h2 style="color:var(--yellow)">D — OMBRO + BRAÇOS</h2><p>Volume + Pump total</p></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Progresso</span><span id="prog-D">0 séries</span></div><div class="progress-bar"><div class="progress-fill" id="fill-D" style="width:0%;background:var(--yellow)"></div></div></div>
+    <div class="ex-card" id="ex-D1"><div class="ex-header" onclick="toggleEx('ex-D1')"><div><div class="ex-number">01 · Ombro</div><div class="ex-name">Desenvolvimento Halter</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="26" data-ex="D1" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="28" data-ex="D1" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="30" data-ex="D1" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6–8</td><td><input class="peso-input" type="text" value="32" data-ex="D1" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D1"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D2"><div class="ex-header" onclick="toggleEx('ex-D2')"><div><div class="ex-number">02 · Lateral</div><div class="ex-name">Elevação Lateral</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="12" data-ex="D2" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="14" data-ex="D2" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8+drop</td><td><input class="peso-input" type="text" value="14" data-ex="D2" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D2"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D3"><div class="ex-header" onclick="toggleEx('ex-D3')"><div><div class="ex-number">03 · Lateral Uni</div><div class="ex-name">Elev. Lateral Unilateral</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="10" data-ex="D3" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>15</td><td><input class="peso-input" type="text" value="10" data-ex="D3" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D3"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D4"><div class="ex-header" onclick="toggleEx('ex-D4')"><div><div class="ex-number">04 · Posterior</div><div class="ex-name">Posterior Polia</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>15</td><td><input class="peso-input" type="text" value="5" data-ex="D4" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>15</td><td><input class="peso-input" type="text" value="5" data-ex="D4" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>15</td><td><input class="peso-input" type="text" value="7.5" data-ex="D4" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D4"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D5"><div class="ex-header" onclick="toggleEx('ex-D5')"><div><div class="ex-number">05 · Trapézio</div><div class="ex-name">Encolhimento Halter</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="30" data-ex="D5" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>12</td><td><input class="peso-input" type="text" value="36" data-ex="D5" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>10</td><td><input class="peso-input" type="text" value="40" data-ex="D5" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>10</td><td><input class="peso-input" type="text" value="40" data-ex="D5" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D5"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D6"><div class="ex-header" onclick="toggleEx('ex-D6')"><div><div class="ex-number">06 · Bíceps</div><div class="ex-name">Rosca Direta</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="26" data-ex="D6" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="30" data-ex="D6" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>8</td><td><input class="peso-input" type="text" value="34" data-ex="D6" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>6</td><td><input class="peso-input" type="text" value="38" data-ex="D6" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D6"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D7"><div class="ex-header" onclick="toggleEx('ex-D7')"><div><div class="ex-number">07 · Bíceps</div><div class="ex-name">Rosca Martelo</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>10</td><td><input class="peso-input" type="text" value="16" data-ex="D7" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="18" data-ex="D7" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>10–12</td><td><input class="peso-input" type="text" value="—" data-ex="D7" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D7"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D8"><div class="ex-header" onclick="toggleEx('ex-D8')"><div><div class="ex-number">08 · Tríceps</div><div class="ex-name">Tríceps Polia</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="30" data-ex="D8" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>10</td><td><input class="peso-input" type="text" value="32.5" data-ex="D8" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>10</td><td><input class="peso-input" type="text" value="35" data-ex="D8" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S4</td><td>10 2s hold</td><td><input class="peso-input" type="text" value="37.5" data-ex="D8" data-serie="3" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D8"></textarea></div></div></div>
+    <div class="ex-card" id="ex-D9"><div class="ex-header" onclick="toggleEx('ex-D9')"><div><div class="ex-number">09 · Tríceps</div><div class="ex-name">Tríceps Testa Polia</div></div><div class="ex-chevron">▾</div></div><div class="ex-body"><table class="series-table"><tr><th></th><th>Reps</th><th>Carga (kg)</th><th>✓</th></tr><tr><td class="serie-num">S1</td><td>12</td><td><input class="peso-input" type="text" value="25" data-ex="D9" data-serie="0" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S2</td><td>12</td><td><input class="peso-input" type="text" value="25" data-ex="D9" data-serie="1" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr><tr><td class="serie-num">S3</td><td>12</td><td><input class="peso-input" type="text" value="25" data-ex="D9" data-serie="2" onchange="updatePeso(this)"></td><td><button class="check-btn" onclick="checkSerie(this,'D')">✓</button></td></tr></table><div class="obs-wrap"><div class="obs-label">📝 Obs. do dia</div><textarea class="obs-input" rows="2" placeholder="Observações..." data-ex="D9"></textarea></div></div></div>
+    <button class="finish-btn" style="background:var(--yellow);color:#000" onclick="finalizarTreino('D')">✅ FINALIZAR TREINO D</button>
+    <button class="reset-btn" onclick="resetPanel('D')">↺ Resetar Treino D</button>
+  </div>
+
+  <!-- CARDIO -->
+  <div id="panel-cardio" class="panel">
+    <div class="panel-header" style="border-left-color:var(--orange)"><div class="panel-info"><h2 style="color:var(--orange)">CARDIO</h2><p>Pós treino · Queima sem perder músculo</p></div></div>
+    <div class="info-card"><div class="info-card-title">✅ PADRÃO — 3x por semana</div><div class="info-row"><span class="info-label">Duração</span><span class="info-value" style="color:var(--orange)">15–20 min</span></div><div class="info-row"><span class="info-label">Velocidade</span><span class="info-value" style="color:var(--orange)">6–6.5 km/h</span></div><div class="info-row"><span class="info-label">Inclinação</span><span class="info-value" style="color:var(--orange)">Leve</span></div></div>
+    <div class="info-card"><div class="info-card-title">🔥 HIIT — 1x por semana</div><div class="info-row"><span class="info-label">Ciclos</span><span class="info-value" style="color:var(--red)">6–8 rodadas</span></div><div class="hiit-steps"><div class="hiit-step run"><div style="font-size:17px">🏃</div><div><div class="hiit-step-name" style="color:var(--orange)">Corrida</div><div class="hiit-step-detail">1 min · 10–12 km/h</div></div></div><div style="text-align:center;color:var(--muted);font-size:16px">↕</div><div class="hiit-step walk"><div style="font-size:17px">🚶</div><div><div class="hiit-step-name" style="color:var(--green)">Caminhada</div><div class="hiit-step-detail">2 min · recuperação</div></div></div></div></div>
+    <div class="info-card" style="border-color:#ff2d2d33"><div class="info-card-title" style="color:var(--red)">❌ NUNCA FAZER</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px"><div class="no-tag">❌ Cardio longo todo dia</div><div class="no-tag">❌ Cardio antes do treino pesado</div></div></div>
+  </div>
+
+  <!-- ABS -->
+  <div id="panel-abs" class="panel">
+    <div class="panel-header" style="border-left-color:var(--purple)"><div class="panel-info"><h2 style="color:var(--purple)">ABDÔMEN</h2><p>2–3x por semana · Após treino A ou B</p></div></div>
+    <div class="abs-day" id="abs-d1"><div class="abs-day-header" onclick="toggleAbs('abs-d1')"><div><div class="abs-day-title" style="color:var(--purple)">Protocolo — Após Peito ou Costas</div><div class="abs-day-sub">3 exercícios · ~10 min</div></div><div class="ex-chevron">▾</div></div><div class="abs-day-body"><div class="abs-ex-row"><div><div class="abs-ex-name">Elevação de Pernas</div><div class="abs-ex-sets">3 séries · 10–15 reps</div></div><div class="abs-check-group"><button class="abs-check" onclick="toggleAC(this)">✓</button><button class="abs-check" onclick="toggleAC(this)">✓</button><button class="abs-check" onclick="toggleAC(this)">✓</button></div></div><div class="abs-ex-row"><div><div class="abs-ex-name">Crunch Máquina ou Solo</div><div class="abs-ex-sets">3 séries · 12–15 reps</div></div><div class="abs-check-group"><button class="abs-check" onclick="toggleAC(this)">✓</button><button class="abs-check" onclick="toggleAC(this)">✓</button><button class="abs-check" onclick="toggleAC(this)">✓</button></div></div><div class="abs-ex-row"><div><div class="abs-ex-name">Prancha</div><div class="abs-ex-sets">2 séries · até falha</div></div><div class="abs-check-group"><button class="abs-check" onclick="toggleAC(this)">✓</button><button class="abs-check" onclick="toggleAC(this)">✓</button></div></div></div></div>
+  </div>
+</div>
+
+<!-- ===== HISTÓRICO ===== -->
+<div id="main-historico" class="main-section">
+  <div class="hist-section">
+    <div class="hist-header">
+      <div class="hist-title">📋 Histórico</div>
+      <div class="hist-actions">
+        <button class="hist-btn hist-clear" onclick="clearHistory()">Limpar</button>
+      </div>
+    </div>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+<!-- ===== FOTOS ===== -->
+<div id="main-fotos" class="main-section">
+  <div class="foto-section">
+    <div class="foto-header">
+      <div class="foto-title">📸 Evolução</div>
+      <button class="add-foto-btn" onclick="toggleFotoForm(true)">+ Adicionar</button>
+    </div>
+    <div id="foto-form-wrap" style="display:none">
+      <div class="foto-form">
+        <div class="foto-form-title">📷 Novo Registro</div>
+        <div class="foto-field"><label>Peso atual (kg)</label><input type="number" id="foto-peso" placeholder="Ex: 82.5" step="0.1"></div>
+        <div class="foto-field"><label>Observação (opcional)</label><input type="text" id="foto-obs" placeholder="Ex: Após 4 semanas de treino"></div>
+        <div class="foto-field">
+          <label>Foto</label>
+          <label class="foto-file-label" for="foto-file-input">📷 Toque para selecionar foto</label>
+          <input type="file" id="foto-file-input" accept="image/*" style="display:none" onchange="previewFoto(this)">
+          <img id="foto-preview-img" class="foto-preview" alt="">
+        </div>
+        <button class="foto-save-btn" onclick="salvarFoto()">💾 SALVAR REGISTRO</button>
+        <button class="foto-cancel-btn" onclick="toggleFotoForm(false)">Cancelar</button>
+      </div>
+    </div>
+    <div id="foto-grid-wrap"></div>
+  </div>
+</div>
+
+<!-- ===== EXPORTAR ===== -->
+<div id="main-export" class="main-section">
+  <div style="padding:12px">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:19px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">📤 Exportar Dados</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Compartilhe ou salve seu histórico completo de treinos para análise.</div>
+    <div style="display:grid;gap:9px;margin-bottom:16px">
+      <button onclick="gerarExport('texto')" style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px"><span style="font-size:22px">📋</span><div><div>Relatório em Texto</div><div style="font-size:10px;color:var(--muted);font-weight:400;margin-top:2px;text-transform:none;letter-spacing:0">Fácil de ler e compartilhar via WhatsApp</div></div></button>
+      <button onclick="gerarExport('json')" style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px"><span style="font-size:22px">🗂️</span><div><div>Dados JSON</div><div style="font-size:10px;color:var(--muted);font-weight:400;margin-top:2px;text-transform:none;letter-spacing:0">Para análise técnica e backup completo</div></div></button>
+    </div>
+    <div id="export-result" style="display:none">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Prévia:</div>
+      <textarea id="export-textarea" class="export-textarea" readonly></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <button onclick="copiarExport()" style="padding:12px;background:var(--blue);border:none;border-radius:9px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">📋 COPIAR</button>
+        <button onclick="document.getElementById('export-result').style.display='none'" style="padding:12px;background:none;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">FECHAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const daysW=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const nd=new Date();
+document.getElementById('today-label').textContent=daysW[nd.getDay()]+' '+nd.getDate()+'/'+(nd.getMonth()+1);
+
+const exNames={A1:'Cross na Polia',A2:'Supino Reto Halter',A3:'Supino Inclinado Halter',A4:'Chest Press',A5:'Cross Finalizador',A6:'Flexão',B1:'Pulldown Pronada',B2:'Pullover Polia Barra',B3:'Remada Smith Supinada',B4:'Remada Baixa',B5:'Facepull',B6:'Elev. Lateral Leve',C1:'Extensora',C2:'Leg Press',C3:'Agachamento Smith',C4:'Flexora',C5:'Stiff Halter',C6:'Panturrilha',D1:'Desenv. Halter',D2:'Elev. Lateral',D3:'Elev. Lateral Uni.',D4:'Posterior Polia',D5:'Encolhimento Halter',D6:'Rosca Direta',D7:'Rosca Martelo',D8:'Tríceps Polia',D9:'Tríceps Testa'};
+const panelColors={A:'var(--red)',B:'var(--blue)',C:'var(--green)',D:'var(--yellow)'};
+const panelNames={A:'Peito',B:'Costas',C:'Pernas',D:'Ombro + Braços'};
+
+// ── Persistência via window.storage ──
+const HIST_KEY='trackfit:history';
+const FOTO_KEY='trackfit:fotos';
+
+let history=[];
+let fotos=[];
+
+async function loadStorage(){
+  try{
+    const h=await window.storage.get(HIST_KEY);
+    if(h) history=JSON.parse(h.value);
+  }catch(e){history=[];}
+  try{
+    const f=await window.storage.get(FOTO_KEY);
+    if(f) fotos=JSON.parse(f.value);
+  }catch(e){fotos=[];}
+}
+
+async function saveHistory(){
+  try{ await window.storage.set(HIST_KEY, JSON.stringify(history)); }catch(e){}
+}
+async function saveFotos(){
+  try{ await window.storage.set(FOTO_KEY, JSON.stringify(fotos)); }catch(e){}
+}
+
+loadStorage();
+
+function switchMain(s){
+  document.querySelectorAll('.main-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.main-section').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('main-'+s).classList.add('active');
+  if(s==='historico')renderHistory();
+  if(s==='fotos')renderFotos();
+  window.scrollTo(0,0);
+}
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-tab="'+tab+'"]').classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+  window.scrollTo(0,0);
+}
+function toggleEx(id){document.getElementById(id).classList.toggle('open')}
+function toggleAbs(id){document.getElementById(id).classList.toggle('open')}
+function toggleAC(btn){btn.classList.toggle('done');btn.style.color=btn.classList.contains('done')?'#fff':'transparent'}
+function updatePeso(inp){inp.classList.add('peso-updated');showToast('Peso atualizado ✓');setTimeout(()=>inp.classList.remove('peso-updated'),1800)}
+function checkSerie(btn,panel){btn.classList.toggle('done');btn.style.color=btn.classList.contains('done')?'#000':'transparent';updateProgress(panel)}
+function updateProgress(panel){
+  const all=document.querySelectorAll('#panel-'+panel+' .check-btn');
+  const done=document.querySelectorAll('#panel-'+panel+' .check-btn.done');
+  const pct=Math.round((done.length/all.length)*100);
+  document.getElementById('fill-'+panel).style.width=pct+'%';
+  document.getElementById('prog-'+panel).textContent=done.length+'/'+all.length+' séries ('+pct+'%)';
+}
+function resetPanel(panel){
+  document.querySelectorAll('#panel-'+panel+' .check-btn').forEach(b=>{b.classList.remove('done');b.style.color='transparent'});
+  document.querySelectorAll('#panel-'+panel+' .ex-card').forEach(c=>c.classList.remove('open'));
+  document.querySelectorAll('#panel-'+panel+' .obs-input').forEach(t=>t.value='');
+  updateProgress(panel);
+}
+['A','B','C','D'].forEach(p=>updateProgress(p));
+
+function finalizarTreino(panel){
+  const exercicios=[];
+  const cards=document.querySelectorAll('#panel-'+panel+' .ex-card');
+  cards.forEach(card=>{
+    const id=card.id.replace('ex-','');
+    const nome=exNames[id]||id;
+    const rows=card.querySelectorAll('.series-table tr:not(:first-child)');
+    const series=[];
+    rows.forEach((row,i)=>{
+      const pesoInp=row.querySelector('.peso-input');
+      const check=row.querySelector('.check-btn');
+      if(check) series.push({num:i+1,peso:pesoInp?pesoInp.value:'—',feita:check.classList.contains('done')});
+    });
+    const obsEl=card.querySelector('.obs-input');
+    const obs=obsEl?obsEl.value.trim():'';
+    if(series.length>0) exercicios.push({id,nome,series,obs});
+  });
+  const now=new Date();
+  const dateStr=now.getDate()+'/'+(now.getMonth()+1)+'/'+now.getFullYear();
+  const timeStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const done=document.querySelectorAll('#panel-'+panel+' .check-btn.done').length;
+  const total=document.querySelectorAll('#panel-'+panel+' .check-btn').length;
+  history.unshift({panel,nome:panelNames[panel],date:dateStr,time:timeStr,exercicios,done,total});
+  saveHistory();
+  showToast('Treino '+panel+' salvo! 💪');
+  setTimeout(()=>{
+    document.querySelectorAll('.main-nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.main-section').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.main-nav-btn')[1].classList.add('active');
+    document.getElementById('main-historico').classList.add('active');
+    renderHistory();window.scrollTo(0,0);
+  },700);
+}
+
+function renderHistory(){
+  const el=document.getElementById('hist-list');
+  if(!history.length){el.innerHTML='<div class="no-hist"><div class="no-hist-icon">📭</div><p>Nenhum treino registrado ainda.<br>Finalize um treino para ver aqui.</p></div>';return}
+  el.innerHTML=history.map((h,idx)=>{
+    const pct=Math.round((h.done/h.total)*100);
+    const color=panelColors[h.panel]||'var(--text)';
+    const exHtml=h.exercicios.map(ex=>{
+      const chips=ex.series.map(s=>`<div class="hist-serie-chip${s.feita?' done-chip':''}"><span class="hsc-num">S${s.num}</span><span class="hsc-peso">${s.peso}kg</span>${s.feita?'<span style="font-size:9px">✓</span>':''}</div>`).join('');
+      const obsHtml=ex.obs?`<div class="hist-obs-box"><span>📝</span><span>${ex.obs}</span></div>`:'';
+      return `<div class="hist-ex-block"><div class="hist-ex-name">${ex.nome}</div><div class="hist-series-row">${chips}</div>${obsHtml}</div>`;
+    }).join('');
+    return `<div class="hist-day-card" id="hcard-${idx}"><div class="hist-day-header" onclick="toggleHCard(${idx})"><div class="hist-day-left"><div class="hist-day-badge" style="background:${color}22;color:${color}">${h.panel}</div><div><div class="hist-day-date">${h.nome}</div><div class="hist-day-meta">${h.date} · ${h.time} · ${h.done}/${h.total} (${pct}%)</div></div></div><div class="ex-chevron" style="color:var(--muted)">▾</div></div><div class="hist-day-body">${exHtml}</div></div>`;
+  }).join('');
+}
+function toggleHCard(idx){document.getElementById('hcard-'+idx).classList.toggle('open')}
+function clearHistory(){if(confirm('Apagar todo o histórico de treinos?')){history=[];saveHistory();renderHistory();showToast('Histórico apagado')}}
+
+// FOTOS
+let fotoDataURL='';
+function toggleFotoForm(show){document.getElementById('foto-form-wrap').style.display=show?'block':'none';if(!show){document.getElementById('foto-peso').value='';document.getElementById('foto-obs').value='';document.getElementById('foto-file-input').value='';document.getElementById('foto-preview-img').style.display='none';fotoDataURL=''}}
+function previewFoto(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{fotoDataURL=e.target.result;const img=document.getElementById('foto-preview-img');img.src=fotoDataURL;img.style.display='block'};r.readAsDataURL(f);
+}
+function salvarFoto(){
+  const peso=document.getElementById('foto-peso').value;
+  const obs=document.getElementById('foto-obs').value.trim();
+  if(!fotoDataURL){showToast('⚠️ Selecione uma foto');return}
+  const now=new Date();
+  const dateStr=now.getDate()+'/'+(now.getMonth()+1)+'/'+now.getFullYear();
+  fotos.unshift({src:fotoDataURL,peso:peso||'—',obs,date:dateStr});
+  toggleFotoForm(false);saveFotos();renderFotos();showToast('Foto salva! 📸');
+}
+function renderFotos(){
+  const el=document.getElementById('foto-grid-wrap');
+  if(!fotos.length){el.innerHTML='<div class="no-foto"><div class="no-foto-icon">📷</div><p style="font-size:13px;color:var(--muted);line-height:1.6">Nenhuma foto registrada.<br>Adicione sua primeira foto de evolução!</p></div>';return}
+  el.innerHTML='<div class="foto-grid">'+fotos.map((f,i)=>`<div class="foto-card"><img src="${f.src}" alt="evolução"><div class="foto-card-info"><div class="foto-card-date">${f.date}</div><div class="foto-card-peso">${f.peso} kg</div>${f.obs?`<div class="foto-card-obs">${f.obs}</div>`:''}</div><button class="foto-card-del" onclick="deleteFoto(${i})">🗑 Remover</button></div>`).join('')+'</div>';
+}
+function deleteFoto(i){fotos.splice(i,1);saveFotos();renderFotos();showToast('Foto removida')}
+
+// EXPORTAR
+function gerarExport(tipo){
+  if(!history.length){showToast('⚠️ Sem histórico para exportar');return}
+  let txt='';
+  if(tipo==='texto'){
+    txt='============================\n';
+    txt+='  TRACK FIT — BY ANDREY\n';
+    txt+='  Exportado em: '+new Date().toLocaleDateString('pt-BR')+'\n';
+    txt+='============================\n\n';
+    history.forEach(h=>{
+      txt+=`📅 ${h.date} ${h.time} — TREINO ${h.panel} (${h.nome})\n`;
+      txt+=`   Séries: ${h.done}/${h.total}\n`;
+      h.exercicios.forEach(ex=>{
+        txt+=`\n   🏋 ${ex.nome}\n`;
+        ex.series.forEach(s=>txt+=`      S${s.num}: ${s.peso}kg ${s.feita?'✓':''}\n`);
+        if(ex.obs) txt+=`      📝 Obs: ${ex.obs}\n`;
+      });
+      txt+='\n----------------------------\n\n';
+    });
+  } else {
+    txt=JSON.stringify({app:'Track Fit - By Andrey',exportado:new Date().toISOString(),treinos:history},null,2);
+  }
+  document.getElementById('export-textarea').value=txt;
+  document.getElementById('export-result').style.display='block';
+  document.getElementById('export-result').scrollIntoView({behavior:'smooth'});
+}
+function copiarExport(){
+  const ta=document.getElementById('export-textarea');
+  ta.select();ta.setSelectionRange(0,99999);
+  try{document.execCommand('copy');showToast('Copiado! 📋')}catch(e){showToast('Selecione e copie manualmente')}
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+</script>
+</body>
+</html>
